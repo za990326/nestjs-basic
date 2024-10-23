@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表  
+model Users {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique @db.VarChar(50)
+  password     String   @db.VarChar(50)
+  nick_name    String   @db.VarChar(50)
+  email        String   @unique @db.VarChar(50)
+  head_pic     String   @db.VarChar(100) // 头像  
+  phone_number String   @db.VarChar(20) // 手机号  
+  is_frozen    Boolean // 是否被冻结  
+  is_admin     Boolean // 是否是管理员  
+  create_time  DateTime @default(now())
+  update_time  DateTime @updatedAt()
+
+  // 关联角色  
+  user_roles User_Roles[]
+}
+
+// 会议室表  
+
+// 角色表  
+model Roles {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(20) // 角色名  
+
+  // 关联用户角色  
+  user_roles       User_Roles[]
+  // 关联角色权限  
+  role_permissions Role_Permissions[]
+}
+
+// 权限表  
+model Permissions {
+  id          Int    @id @default(autoincrement())
+  code        String @db.VarChar(20) // 权限代码  
+  description String @db.VarChar(100) // 权限描述  
+
+  // 关联角色权限  
+  role_permissions Role_Permissions[]
+}
+
+// 用户角色表  
+model User_Roles {
+  id      Int @id @default(autoincrement())
+  user_id Int // 用户ID  
+  role_id Int // 角色ID  
+
+  // 外键关联  
+  user Users @relation(fields: [user_id], references: [id])
+  role Roles @relation(fields: [role_id], references: [id])
+}
+
+// 角色权限表  
+model Role_Permissions {
+  id            Int @id @default(autoincrement())
+  role_id       Int // 角色ID  
+  permission_id Int // 权限ID  
+
+  // 外键关联  
+  role       Roles       @relation(fields: [role_id], references: [id])
+  permission Permissions @relation(fields: [permission_id], references: [id])
+}
